@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}设备管理 - 设备管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1><i class="bi bi-device-ssd"></i> 设备管理</h1>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('add_device') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> 添加设备
+        </a>
+    </div>
+</div>
+
+<!-- 搜索栏 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('devices') }}" class="row g-3">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control" name="search" placeholder="搜索设备名称、编号、型号..." value="{{ search }}">
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <select class="form-select" name="status">
+                    <option value="">所有状态</option>
+                    <option value="正常" {% if status == '正常' %}selected{% endif %}>正常</option>
+                    <option value="借用中" {% if status == '借用中' %}selected{% endif %}>借用中</option>
+                    <option value="维修中" {% if status == '维修中' %}selected{% endif %}>维修中</option>
+                </select>
+            </div>
+            
+            {% if locations %}
+            <div class="col-md-3">
+                <select class="form-select" name="location">
+                    <option value="">所有地点</option>
+                    {% for loc in locations %}
+                    <option value="{{ loc }}" {% if location == loc %}selected{% endif %}>{{ loc }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    搜索
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 统计信息 -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">设备总数</h6>
+                        <h2 class="mb-0">{{ total_devices if total_devices else 0 }}</h2>
+                    </div>
+                    <i class="bi bi-device-ssd display-6 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">可用设备</h6>
+                        <h2 class="mb-0">{{ available_devices if available_devices else 0 }}</h2>
+                    </div>
+                    <i class="bi bi-check-circle display-6 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">借用中</h6>
+                        <h2 class="mb-0">{{ borrowed_devices if borrowed_devices else 0 }}</h2>
+                    </div>
+                    <i class="bi bi-clock display-6 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 设备表格 -->
+<div class="card">
+    <div class="card-body">
+        {% if devices %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>设备名称</th>
+                        <th>设备编号</th>
+                        <th>设备型号</th>
+                        <th>校准日期</th>
+                        <th>所在地</th>
+                        <th>管理人</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for device in devices %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ device.name }}</td>
+                        <td><span class="badge bg-secondary">{{ device.number }}</span></td>
+                        <td>{{ device.model }}</td>
+                        <td>{{ device.calibration_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ device.location }}</td>
+                        <td>{{ device.manager }}</td>
+                        <td>
+                            {% if device.status == '正常' %}
+                            <span class="badge bg-success">{{ device.status }}</span>
+                            {% elif device.status == '借用中' %}
+                            <span class="badge bg-warning">{{ device.status }}</span>
+                            {% elif device.status == '维修中' %}
+                            <span class="badge bg-danger">{{ device.status }}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ device.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('edit_device', device_id=device.id) }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% if device.status != '借用中' %}
+                                <a href="{{ url_for('borrow_device') }}?device_id={{ device.id }}" class="btn btn-outline-success" title="借用设备">
+                                    <i class="bi bi-box-arrow-in-right"></i>
+                                </a>
+                                {% else %}
+                                <a href="{{ url_for('borrow_records') }}" class="btn btn-outline-warning" title="查看借用记录">
+                                    <i class="bi bi-clock-history"></i>
+                                </a>
+                                {% endif %}
+                                <form method="POST" action="{{ url_for('delete_device', device_id=device.id) }}" style="display: inline;" onsubmit="return confirm('确定要删除这个设备吗？');">
+                                    <button type="submit" class="btn btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 导出按钮 -->
+        <div class="mt-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted">
+                        共 {{ total_devices if total_devices else 0 }} 个设备
+                    </span>
+                </div>
+                <div>
+                    <a href="{{ url_for('export_devices') }}" class="btn btn-outline-success">
+                        <i class="bi bi-download"></i> 导出设备数据
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        {% else %}
+        <div class="text-center py-5">
+            {% if search or status or location %}
+            <i class="bi bi-search display-1 text-muted"></i>
+            <p class="text-muted mt-3">没有找到匹配的设备</p>
+            <a href="{{ url_for('devices') }}" class="btn btn-outline-primary">显示所有设备</a>
+            {% else %}
+            <i class="bi bi-inbox display-1 text-muted"></i>
+            <p class="text-muted mt-3">暂无设备数据</p>
+            <a href="{{ url_for('add_device') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> 添加第一个设备
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 自动关闭警告框
+setTimeout(function() {
+    var alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        var bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+    });
+}, 3000);
+</script>
+{% endblock %}

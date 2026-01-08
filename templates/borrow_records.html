@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}借用记录 - 设备管理系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+    <h1>借用记录</h1>
+    <div>
+        <a href="{{ url_for('borrow_device') }}" class="btn btn-primary">借用设备</a>
+        <a href="{{ url_for('return_device') }}" class="btn btn-success">归还设备</a>
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>设备</th>
+            <th>借用人</th>
+            <th>借用日期</th>
+            <th>预计归还</th>
+            <th>实际归还</th>
+            <th>状态</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in records %}
+        <tr>
+            <td>{{ record.device.name }}</td>
+            <td>{{ record.borrower_name }}</td>
+            <td>{{ record.borrow_date.strftime('%Y-%m-%d') }}</td>
+            <td>
+                {% if record.expected_return_date %}
+                {{ record.expected_return_date.strftime('%Y-%m-%d') }}
+                {% else %}
+                -
+                {% endif %}
+            </td>
+            <td>
+                {% if record.actual_return_date %}
+                {{ record.actual_return_date.strftime('%Y-%m-%d') }}
+                {% else %}
+                -
+                {% endif %}
+            </td>
+            <td>
+                {% if record.status == '借用中' %}
+                <span class="badge bg-warning">{{ record.status }}</span>
+                {% else %}
+                <span class="badge bg-success">{{ record.status }}</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}借用记录详情 - 设备管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1><i class="bi bi-journal-text"></i> 借用记录详情</h1>
+        <p class="text-muted">设备借用详细信息</p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('borrow_records') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> 返回列表
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- 基本信息卡片 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">借用基本信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <th width="40%">设备名称：</th>
+                                <td>{{ record.device.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>设备编号：</th>
+                                <td><span class="badge bg-secondary">{{ record.device.number }}</span></td>
+                            </tr>
+                            <tr>
+                                <th>设备型号：</th>
+                                <td>{{ record.device.model }}</td>
+                            </tr>
+                            <tr>
+                                <th>设备所在地：</th>
+                                <td>{{ record.device.location }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <th width="40%">借用人：</th>
+                                <td>{{ record.borrower_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>所在部门：</th>
+                                <td>{{ record.borrower_department or '未填写' }}</td>
+                            </tr>
+                            <tr>
+                                <th>联系方式：</th>
+                                <td>{{ record.borrower_contact or '未填写' }}</td>
+                            </tr>
+                            <tr>
+                                <th>审批人：</th>
+                                <td>{{ record.approver }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 时间信息卡片 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">时间信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center p-3 {% if record.status == '借用中' and record.is_overdue %}bg-danger text-white{% else %}bg-light{% endif %} rounded">
+                            <small>借用日期</small>
+                            <h4 class="mb-0">{{ record.borrow_date.strftime('%Y-%m-%d') }}</h4>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-light rounded">
+                            <small>预计归还</small>
+                            <h4 class="mb-0">
+                                {% if record.expected_return_date %}
+                                    {{ record.expected_return_date.strftime('%Y-%m-%d') }}
+                                {% else %}
+                                    <span class="text-muted">未设定</span>
+                                {% endif %}
+                            </h4>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="text-center p-3 {% if record.status == '已归还' %}bg-success text-white{% else %}bg-light{% endif %} rounded">
+                            <small>实际归还</small>
+                            <h4 class="mb-0">
+                                {% if record.actual_return_date %}
+                                    {{ record.actual_return_date.strftime('%Y-%m-%d') }}
+                                {% else %}
+                                    <span class="text-muted">未归还</span>
+                                {% endif %}
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if record.is_overdue %}
+                <div class="alert alert-danger mt-3">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>超期提醒：</strong>该设备已超期 {{ record.overdue_days }} 天未归还！
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- 借用详情卡片 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">借用详情</h5>
+            </div>
+            <div class="card-body">
+                <h6>借用用途：</h6>
+                <div class="p-3 bg-light rounded mb-3">
+                    {{ record.borrow_purpose or '未填写' }}
+                </div>
+                
+                <h6>借用备注：</h6>
+                <div class="p-3 bg-light rounded mb-3">
+                    {{ record.borrow_notes or '无' }}
+                </div>
+                
+                <h6>状态：</h6>
+                <div class="mb-3">
+                    {% if record.status == '借用中' %}
+                        {% if record.is_overdue %}
+                        <span class="badge bg-danger fs-6">超期未还</span>
+                        {% else %}
+                        <span class="badge bg-warning fs-6">借用中</span>
+                        {% endif %}
+                    {% elif record.status == '已归还' %}
+                        <span class="badge bg-success fs-6">已归还</span>
+                    {% else %}
+                        <span class="badge bg-secondary fs-6">{{ record.status }}</span>
+                    {% endif %}
+                </div>
+                
+                <h6>记录信息：</h6>
+                <div class="text-muted small">
+                    <i class="bi bi-clock"></i> 创建时间：{{ record.created_at.strftime('%Y-%m-%d %H:%M:%S') }}<br>
+                    <i class="bi bi-pencil"></i> 最后更新：{{ record.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}<br>
+                    <i class="bi bi-person"></i> 记录创建人：{{ record.creator.username if record.creator else '系统' }}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 侧边栏操作 -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">操作</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if record.status == '借用中' %}
+                    <a href="{{ url_for('return_device') }}?record_id={{ record.id }}" class="btn btn-success btn-lg">
+                        <i class="bi bi-box-arrow-left"></i> 归还设备
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('device_borrow_history', device_id=record.device.id) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-history"></i> 查看设备借用历史
+                    </a>
+                    
+                    <a href="{{ url_for('edit_device', device_id=record.device.id) }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-gear"></i> 编辑设备信息
+                    </a>
+                    
+                    {% if current_user.role == 'admin' %}
+                    <button type="button" class="btn btn-outline-danger" onclick="deleteRecord({{ record.id }})">
+                        <i class="bi bi-trash"></i> 删除借用记录
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- 设备状态卡片 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">设备当前状态</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    {% if record.device.status == '借用中' %}
+                    <i class="bi bi-box-arrow-in-right display-1 text-warning"></i>
+                    <h4 class="mt-3">设备借用中</h4>
+                    <p class="text-muted">当前借用人：{{ record.borrower_name }}</p>
+                    {% elif record.device.status == '正常' %}
+                    <i class="bi bi-check-circle display-1 text-success"></i>
+                    <h4 class="mt-3">设备可用</h4>
+                    <p class="text-muted">设备处于可用状态</p>
+                    {% else %}
+                    <i class="bi bi-tools display-1 text-danger"></i>
+                    <h4 class="mt-3">设备{{ record.device.status }}</h4>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function deleteRecord(recordId) {
+    if (confirm('确定要删除这条借用记录吗？此操作不可撤销！')) {
+        fetch(`/borrow/delete/${recordId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = "{{ url_for('borrow_records') }}";
+            } else {
+                alert('删除失败，请重试');
+            }
+        })
+        .catch(error => {
+            console.error('删除失败:', error);
+            alert('删除失败，请重试');
+        });
+    }
+}
+</script>
+{% endblock %}

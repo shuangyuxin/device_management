@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}添加设备 - 国能宸泰设备管理系统{% endblock %}
+
+{% block content %}
+<h1>添加设备</h1>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label>设备名称 *</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label>设备编号 *</label>
+                    <input type="text" name="number" class="form-control" required>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label>设备型号</label>
+                    <input type="text" name="model" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label>校准日期 *</label>
+                    <input type="date" name="calibration_date" class="form-control" required>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label>所在地</label>
+                    <input type="text" name="location" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label>管理人</label>
+                    <input type="text" name="manager" class="form-control">
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label>设备信息</label>
+                <textarea name="info" class="form-control" rows="3"></textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label>状态</label>
+                <select name="status" class="form-select">
+                    <option value="正常" selected>正常</option>
+                    <option value="维修中">维修中</option>
+                    <option value="停用">停用</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">添加设备</button>
+            <a href="{{ url_for('devices') }}" class="btn btn-secondary">取消</a>
+        </form>
+    </div>
+</div>
+
+<script>
+// 设置默认日期为今天
+document.querySelector('input[name="calibration_date"]').valueAsDate = new Date();
+</script>
+{% endblock %}

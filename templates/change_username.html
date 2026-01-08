@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}修改用户名 - 设备管理系统{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-person"></i> 修改用户名
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('change_username') }}">
+                    <div class="mb-3">
+                        <label class="form-label">当前用户名</label>
+                        <input type="text" class="form-control" value="{{ current_user.username }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="new_username" class="form-label">新用户名</label>
+                        <input type="text" class="form-control" id="new_username" name="new_username" required>
+                        <div class="form-text">用户名长度3-20位</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> 修改用户名
+                        </button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> 取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

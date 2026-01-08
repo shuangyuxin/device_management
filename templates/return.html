@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}归还设备 - 设备管理系统{% endblock %}
+
+{% block content %}
+<h1>归还设备</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label>选择借用记录 *</label>
+                        <select name="record_id" class="form-select" required>
+                            <option value="">请选择借用记录...</option>
+                            {% for record in records %}
+                            <option value="{{ record.id }}">
+                                {{ record.device.name }} - {{ record.borrower_name }}
+                                ({{ record.borrow_date.strftime('%Y-%m-%d') }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success">确认归还</button>
+                    <a href="{{ url_for('borrow_records') }}" class="btn btn-secondary">取消</a>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">借用中设备</div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for record in records %}
+                    <li class="list-group-item">
+                        {{ record.device.name }}<br>
+                        <small class="text-muted">
+                            借用人：{{ record.borrower_name }}<br>
+                            借用日期：{{ record.borrow_date.strftime('%Y-%m-%d') }}
+                        </small>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
